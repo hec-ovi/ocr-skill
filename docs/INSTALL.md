@@ -15,8 +15,9 @@ There is **no MCP server**. Agents drive the `ocr` CLI through their own shell; 
 file tells them when and how. Whatever your harness, prefer `ocr init --quick` once per
 session if you are unsure the engine is ready.
 
-Real OCR needs the optional `deepseek` extra and DeepSeek-OCR-2 weights (GPU recommended).
-`OCR_BACKEND=mock` is for tests and wiring only; do not use it for real user documents.
+**Recommended real OCR on AMD Strix Halo:** Vulkan llama.cpp Docker
+(`docker/`, same pattern as llama-vulkan-strix) + `OCR_BACKEND=llamacpp`.
+Optional torch path: `deepseek` extra. `OCR_BACKEND=mock` is for tests only.
 
 ## Route summary
 
@@ -42,16 +43,22 @@ uv tool install git+https://github.com/hec-ovi/ocr-skill
 ocr doctor --quick
 ```
 
-For the real engine:
+For real OCR (Vulkan, recommended):
 
 ```bash
-uv tool install 'git+https://github.com/hec-ovi/ocr-skill[deepseek]'
-# or from a clone:
-uv sync --extra deepseek
-export OCR_BACKEND=deepseek
-export OCR_MODEL_PATH=/path/to/local/DeepSeek-OCR-2   # if weights are local
-ocr init
+# 1) CLI on PATH (above)
+# 2) GGUF + mmproj under MODELS_DIR (see docker/README.md)
+# 3) server
+cp docker/.env.example docker/.env
+docker compose -f docker/docker-compose.yml --env-file docker/.env up -d
+export OCR_BACKEND=llamacpp
+export OCR_LLAMA_URL=http://127.0.0.1:8090
+ocr doctor
+ocr extract ./scan.png --json
 ```
+
+Optional torch path: `uv tool install 'git+https://github.com/hec-ovi/ocr-skill[deepseek]'`
+and `OCR_BACKEND=deepseek`.
 
 ## As an agent skill (npx skills add)
 
@@ -114,6 +121,6 @@ OCR_BACKEND=mock uv run ocr extract ./some.png --json
 ## First session checklist
 
 1. `ocr doctor --quick --json` (or `ocr init --quick --json`)
-2. If `engine_deepseek` is not ok: `uv sync --extra deepseek` and set `OCR_MODEL_PATH` if needed
+2. If `engine_llamacpp` is not ok: start `docker/` stack and set `OCR_BACKEND=llamacpp`
 3. `ocr extract <abs-path> --json`
 4. If `has_more`: `ocr open <handle> --page 2 --json`

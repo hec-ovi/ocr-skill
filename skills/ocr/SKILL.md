@@ -9,8 +9,9 @@ description: >-
   from vision alone. Commands: init, doctor, extract, open.
 license: MIT
 compatibility: >-
-  Requires the ocr CLI (Python >=3.11, uv). Real OCR: deepseek extra +
-  DeepSeek-OCR-2 weights (GPU recommended). OCR_BACKEND=mock is for tests only.
+  Requires the ocr CLI (Python >=3.11, uv). Real OCR: OCR_BACKEND=llamacpp against
+  the Vulkan llama.cpp Docker stack (docker/), or deepseek extra + torch weights.
+  OCR_BACKEND=mock is for tests only.
 metadata:
   author: Hector Oviedo
   version: "0.1.0"

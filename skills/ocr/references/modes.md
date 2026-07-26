@@ -27,6 +27,10 @@ Notes:
 - `<|grounding|>` is required for layout-aware document modes (`markdown`, `ocr`).
 - Do not pass free-form prompts through the CLI; extend `MODES` + contracts if a new family is needed.
 - Mock backend ignores prompt text and returns deterministic placeholders (tests only).
+- With `OCR_BACKEND=llamacpp`, the image is sent as OpenAI `image_url` content; the
+  engine strips a leading `<image>` token from the text prompt so the server owns media.
+- Grounding modes may emit `text[[x1,y1,x2,y2]]` style boxes before lines. Treat those as
+  layout metadata when quoting; the human-readable text is the lines after them.
 
 ## Source pages vs output pages
 

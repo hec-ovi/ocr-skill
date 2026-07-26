@@ -14,6 +14,7 @@ Map "what to change" to the one folder to open. Outsiders read contracts only.
 | Skill level-3 references | `skills/ocr/references/` |
 | Skill design / progressive disclosure | `docs/SKILL_DESIGN.md` |
 | Install across CLIs | `docs/INSTALL.md` |
+| Vulkan / llama.cpp Docker | `docker/` |
 | Claude plugin manifests | `.claude-plugin/` |
 | Model research notes | `docs/DEEPSEEK_OCR_2.md` |
 | Engine mode ↔ prompt map | `src/ocrskill/layer2_ocr/modes.py` |

@@ -51,6 +51,15 @@ def run_doctor(*, quick: bool = False) -> dict[str, Any]:
     except Exception as exc:
         checks.append(_check("engine_deepseek", "warn", str(exc)))
 
+    try:
+        from ..layer2_ocr.adapters.llamacpp import LlamaCppEngine
+
+        llama = LlamaCppEngine()
+        ok, detail = llama.available()
+        checks.append(_check("engine_llamacpp", "ok" if ok else "warn", detail))
+    except Exception as exc:
+        checks.append(_check("engine_llamacpp", "warn", str(exc)))
+
     if not quick:
         # Smoke: mock extract on a tiny generated image if possible.
         try:
@@ -70,6 +79,7 @@ def run_doctor(*, quick: bool = False) -> dict[str, Any]:
 
     mock_ok = any(c["id"] == "engine_mock" and c["status"] == "ok" for c in checks)
     deep_ok = any(c["id"] == "engine_deepseek" and c["status"] == "ok" for c in checks)
+    llama_ok = any(c["id"] == "engine_llamacpp" and c["status"] == "ok" for c in checks)
     core_fail_ids = ("pillow", "pypdfium2", "pydantic", "cache_dir")
     core_ok = not any(c["status"] == "fail" and c["id"] in core_fail_ids for c in checks)
 
@@ -79,8 +89,10 @@ def run_doctor(*, quick: bool = False) -> dict[str, Any]:
         status, ready = ("ready", True) if mock_ok else ("broken", False)
     elif backend == "deepseek":
         status, ready = ("ready", True) if deep_ok else ("broken", False)
+    elif backend == "llamacpp":
+        status, ready = ("ready", True) if llama_ok else ("broken", False)
     else:  # auto
-        if deep_ok:
+        if llama_ok or deep_ok:
             status, ready = "ready", True
         elif mock_ok:
             # Deps for mock work, but production engine is missing.
@@ -89,12 +101,18 @@ def run_doctor(*, quick: bool = False) -> dict[str, Any]:
             status, ready = "broken", False
 
     next_actions: list[str] = []
+    if not llama_ok and backend in ("auto", "llamacpp"):
+        next_actions.append(
+            "Start Vulkan OCR server: "
+            "docker compose -f docker/docker-compose.yml --env-file docker/.env up -d"
+        )
+        next_actions.append("Set OCR_BACKEND=llamacpp and OCR_LLAMA_URL=http://127.0.0.1:8090")
     if not deep_ok and backend in ("auto", "deepseek"):
         next_actions.append("Install deepseek extra: uv sync --extra deepseek")
         next_actions.append(
             "Set OCR_MODEL_PATH to a local checkpoint under ~/models if already downloaded"
         )
-    if backend == "auto" and not deep_ok:
+    if backend == "auto" and not llama_ok and not deep_ok:
         next_actions.append("Or set OCR_BACKEND=mock for offline/tests")
 
     return {
@@ -110,15 +128,19 @@ def run_init(*, quick: bool = False) -> dict[str, Any]:
     backend = config.backend_name()
     model = config.model_id()
     device = config.device()
+    def _cap(cid: str) -> str:
+        return (
+            "ok"
+            if any(c["id"] == cid and c["status"] == "ok" for c in doctor["checks"])
+            else "down"
+        )
+
     caps = {
         "ingest_image": "ok",
         "ingest_pdf": "ok",
-        "engine_mock": "ok"
-        if any(c["id"] == "engine_mock" and c["status"] == "ok" for c in doctor["checks"])
-        else "down",
-        "engine_deepseek": "ok"
-        if any(c["id"] == "engine_deepseek" and c["status"] == "ok" for c in doctor["checks"])
-        else "down",
+        "engine_mock": _cap("engine_mock"),
+        "engine_deepseek": _cap("engine_deepseek"),
+        "engine_llamacpp": _cap("engine_llamacpp"),
     }
     try:
         eng = build_engine(backend if backend != "auto" else None)

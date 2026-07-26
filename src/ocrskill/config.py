@@ -19,8 +19,26 @@ def env(name: str, default: str | None = None) -> str | None:
 
 
 def backend_name() -> str:
-    """auto | mock | deepseek"""
+    """auto | mock | deepseek | llamacpp"""
     return (env("OCR_BACKEND", "auto") or "auto").strip().lower()
+
+
+def llama_url() -> str:
+    return (env("OCR_LLAMA_URL", "http://127.0.0.1:8090") or "http://127.0.0.1:8090").rstrip(
+        "/"
+    )
+
+
+def llama_model() -> str:
+    return env("OCR_LLAMA_MODEL", "ocr") or "ocr"
+
+
+def llama_timeout_s() -> float:
+    raw = env("OCR_LLAMA_TIMEOUT_S", "300") or "300"
+    try:
+        return max(1.0, float(raw))
+    except ValueError:
+        return 300.0
 
 
 def model_id() -> str:

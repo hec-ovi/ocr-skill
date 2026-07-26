@@ -111,9 +111,9 @@ def _build_parser() -> argparse.ArgumentParser:
     pe.add_argument("--quiet", action="store_true", help="Print only the fenced content")
     pe.add_argument(
         "--backend",
-        choices=("auto", "mock", "deepseek"),
+        choices=("auto", "mock", "deepseek", "llamacpp"),
         default=None,
-        help="Override OCR_BACKEND for this run",
+        help="Override OCR_BACKEND for this run (llamacpp = Vulkan GGUF server)",
     )
     pe.add_argument("--keep-work", action="store_true", help="Keep rasterized page images")
     add_json(pe)

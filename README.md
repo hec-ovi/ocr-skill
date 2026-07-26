@@ -36,12 +36,19 @@ ocr doctor --quick
 uv sync
 OCR_BACKEND=mock uv run pytest
 
-# real DeepSeek-OCR-2
-uv sync --extra deepseek
-export OCR_BACKEND=deepseek
-export OCR_MODEL_PATH=/path/to/local/DeepSeek-OCR-2   # if weights are local
-uv run ocr init
+# real OCR on this machine (recommended): Vulkan + llama.cpp Docker
+# same host pattern as llama-vulkan-strix
+cp docker/.env.example docker/.env
+# download GGUF into MODELS_DIR (see docker/README.md)
+docker compose -f docker/docker-compose.yml --env-file docker/.env up -d
+export OCR_BACKEND=llamacpp
+export OCR_LLAMA_URL=http://127.0.0.1:8090
+ocr doctor
+ocr extract ./scan.png --json
 ```
+
+Torch/transformers path is still available (`uv sync --extra deepseek`, `OCR_BACKEND=deepseek`)
+but the isolated production path on Strix Halo is **llamacpp + Vulkan**.
 
 One-shot without install:
 
@@ -66,7 +73,7 @@ Agent flow (from `skills/ocr/SKILL.md`): when the user provides an image or PDF 
 | Layer | Role |
 |---|---|
 | 1 Ingest | Image/PDF path → ordered page PNGs + checksums |
-| 2 OCR | Engine port: `mock` or `deepseek` (DeepSeek-OCR-2) |
+| 2 OCR | Engine port: `llamacpp` (Vulkan GGUF), `deepseek` (torch), `mock` |
 | 3 Format | Join pages, fence as untrusted, paginate, SQLite store |
 | 4 Agent I/O | `extract` / `open` Envelopes for the CLI |
 
@@ -82,10 +89,12 @@ Every `--json` response is:
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `OCR_BACKEND` | `auto` | `auto`, `deepseek`, or `mock` |
-| `OCR_MODEL_ID` | `deepseek-ai/DeepSeek-OCR-2` | Hugging Face id |
-| `OCR_MODEL_PATH` | (unset) | Local weights path (preferred if set) |
-| `OCR_DEVICE` | `auto` | `auto`, `cuda`, `cpu` |
+| `OCR_BACKEND` | `auto` | `auto`, `llamacpp`, `deepseek`, or `mock` |
+| `OCR_LLAMA_URL` | `http://127.0.0.1:8090` | llama-server base URL |
+| `OCR_LLAMA_MODEL` | `ocr` | Model alias on the server |
+| `OCR_MODEL_ID` | `deepseek-ai/DeepSeek-OCR-2` | HF id (torch path) |
+| `OCR_MODEL_PATH` | (unset) | Local torch weights path |
+| `OCR_DEVICE` | `auto` | torch device: `auto`, `cuda`, `cpu` |
 | `OCR_CACHE_DIR` | `$XDG_CACHE_HOME/ocr-skill` | Work dirs + document store |
 
 ## Security
