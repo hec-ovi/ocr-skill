@@ -5,7 +5,6 @@ from __future__ import annotations
 import shutil
 import time
 from collections.abc import Callable
-from pathlib import Path
 from typing import Any
 
 from .. import config, errors
@@ -44,7 +43,13 @@ class OcrAgent:
             self._engine = build_engine(self._engine_name)
         return self._engine
 
-    def _run(self, layer: str, contract: str, work: Callable[[], Any], backend: str | None = None) -> Envelope:
+    def _run(
+        self,
+        layer: str,
+        contract: str,
+        work: Callable[[], Any],
+        backend: str | None = None,
+    ) -> Envelope:
         started = time.perf_counter()
         try:
             data = work()

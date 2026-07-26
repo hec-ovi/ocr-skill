@@ -5,7 +5,6 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-
 DEFAULT_MODEL_ID = "deepseek-ai/DeepSeek-OCR-2"
 DEFAULT_PAGE_SIZE_TOKENS = 4000
 # Rough chars-per-token for pagination only (not a model tokenizer).

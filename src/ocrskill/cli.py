@@ -66,7 +66,10 @@ def _render_doctor(data: dict[str, Any]) -> None:
 
 def _render_init(data: dict[str, Any]) -> None:
     print(f"state: {data.get('state')}  ready={data.get('ready')}")
-    print(f"backend: {data.get('backend')}  model: {data.get('model')}  device: {data.get('device')}")
+    print(
+        f"backend: {data.get('backend')}  "
+        f"model: {data.get('model')}  device: {data.get('device')}"
+    )
     caps = data.get("capabilities") or {}
     for k, v in caps.items():
         print(f"  {k}: {v}")
@@ -144,10 +147,12 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "doctor":
         data = run_doctor(quick=args.quick)
-        from .envelope import ok_envelope
         from .doctor.runner import DOCTOR_CONTRACT_VERSION
+        from .envelope import ok_envelope
 
-        env = ok_envelope(DOCTOR_CONTRACT_VERSION, data, layer="doctor", backend=config.backend_name())
+        env = ok_envelope(
+            DOCTOR_CONTRACT_VERSION, data, layer="doctor", backend=config.backend_name()
+        )
         return _emit(env, as_json=args.json, render=_render_doctor)
 
     if args.command == "init":
@@ -155,11 +160,9 @@ def main(argv: list[str] | None = None) -> int:
         from .envelope import ok_envelope
 
         env = ok_envelope(INIT_CONTRACT_VERSION, data, layer="init", backend=data.get("backend"))
-        code = _emit(env, as_json=args.json, render=_render_init)
+        _emit(env, as_json=args.json, render=_render_init)
         # exit 1 only when broken
-        if data.get("state") == "broken":
-            return 1
-        return 0
+        return 1 if data.get("state") == "broken" else 0
 
     if args.command == "extract":
         if args.backend:

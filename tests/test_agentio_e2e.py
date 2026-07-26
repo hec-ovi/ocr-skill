@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import os
 from pathlib import Path
 
 from ocrskill.cli import main
@@ -42,7 +41,17 @@ def test_cli_extract_json(sample_png: Path, store_path: Path, monkeypatch, capsy
 def test_cli_extract_pdf(sample_pdf: Path, store_path: Path, monkeypatch, capsys) -> None:
     monkeypatch.setenv("OCR_BACKEND", "mock")
     monkeypatch.setenv("OCR_CACHE_DIR", str(store_path))
-    code = main(["extract", str(sample_pdf), "--json", "--backend", "mock", "--page-size-tokens", "0"])
+    code = main(
+        [
+            "extract",
+            str(sample_pdf),
+            "--json",
+            "--backend",
+            "mock",
+            "--page-size-tokens",
+            "0",
+        ]
+    )
     assert code == 0
     payload = json.loads(capsys.readouterr().out)
     assert payload["ok"] is True
@@ -61,7 +70,15 @@ def test_cli_doctor(monkeypatch, capsys) -> None:
 def test_cli_missing_file(store_path: Path, monkeypatch, capsys) -> None:
     monkeypatch.setenv("OCR_BACKEND", "mock")
     monkeypatch.setenv("OCR_CACHE_DIR", str(store_path))
-    code = main(["extract", "/tmp/definitely-missing-ocr-skill-xyz.png", "--json", "--backend", "mock"])
+    code = main(
+        [
+            "extract",
+            "/tmp/definitely-missing-ocr-skill-xyz.png",
+            "--json",
+            "--backend",
+            "mock",
+        ]
+    )
     assert code == 1
     payload = json.loads(capsys.readouterr().out)
     assert payload["ok"] is False

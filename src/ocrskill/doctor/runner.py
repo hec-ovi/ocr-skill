@@ -68,35 +68,11 @@ def run_doctor(*, quick: bool = False) -> dict[str, Any]:
         except Exception as exc:
             checks.append(_check("mock_infer", "fail", str(exc)))
 
-    fails = [c for c in checks if c["status"] == "fail"]
-    warns = [c for c in checks if c["status"] == "warn"]
-    if fails:
-        status = "broken"
-        ready = False
-    elif warns and backend in ("deepseek", "auto"):
-        # deepseek missing is degraded if mock still works
-        status = "degraded"
-        ready = backend == "mock" or any(c["id"] == "engine_mock" and c["status"] == "ok" for c in checks)
-        # For auto/deepseek without torch, not ready for real OCR
-        deep_ok = any(c["id"] == "engine_deepseek" and c["status"] == "ok" for c in checks)
-        if backend == "deepseek" and not deep_ok:
-            ready = False
-            status = "broken"
-        elif backend == "auto" and not deep_ok:
-            ready = False
-            status = "degraded"
-        else:
-            ready = True if deep_ok or backend == "mock" else ready
-    else:
-        status = "ready"
-        ready = True
-
-    # Recompute ready simply:
     mock_ok = any(c["id"] == "engine_mock" and c["status"] == "ok" for c in checks)
     deep_ok = any(c["id"] == "engine_deepseek" and c["status"] == "ok" for c in checks)
-    core_ok = not any(
-        c["status"] == "fail" and c["id"] in ("pillow", "pypdfium2", "pydantic", "cache_dir") for c in checks
-    )
+    core_fail_ids = ("pillow", "pypdfium2", "pydantic", "cache_dir")
+    core_ok = not any(c["status"] == "fail" and c["id"] in core_fail_ids for c in checks)
+
     if not core_ok:
         status, ready = "broken", False
     elif backend == "mock":
@@ -107,6 +83,7 @@ def run_doctor(*, quick: bool = False) -> dict[str, Any]:
         if deep_ok:
             status, ready = "ready", True
         elif mock_ok:
+            # Deps for mock work, but production engine is missing.
             status, ready = "degraded", False
         else:
             status, ready = "broken", False
@@ -114,7 +91,9 @@ def run_doctor(*, quick: bool = False) -> dict[str, Any]:
     next_actions: list[str] = []
     if not deep_ok and backend in ("auto", "deepseek"):
         next_actions.append("Install deepseek extra: uv sync --extra deepseek")
-        next_actions.append("Set OCR_MODEL_PATH to a local checkpoint under ~/models if already downloaded")
+        next_actions.append(
+            "Set OCR_MODEL_PATH to a local checkpoint under ~/models if already downloaded"
+        )
     if backend == "auto" and not deep_ok:
         next_actions.append("Or set OCR_BACKEND=mock for offline/tests")
 
