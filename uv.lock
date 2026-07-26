@@ -764,6 +764,7 @@ schema = [
 dev = [
     { name = "jsonschema" },
     { name = "pytest" },
+    { name = "pyyaml" },
     { name = "ruff" },
 ]
 
@@ -786,6 +787,7 @@ provides-extras = ["schema", "deepseek"]
 dev = [
     { name = "jsonschema", specifier = ">=4.21" },
     { name = "pytest", specifier = ">=8.0" },
+    { name = "pyyaml", specifier = ">=6.0.3" },
     { name = "ruff", specifier = ">=0.6" },
 ]
 

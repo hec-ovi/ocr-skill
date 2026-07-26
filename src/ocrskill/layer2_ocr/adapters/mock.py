@@ -39,6 +39,15 @@ class MockEngine:
             stem = path.stem
             if mode == "free":
                 body = f"Mock OCR page {page} of {stem}"
+            elif mode == "figure":
+                body = (
+                    f"# Mock figure parse\n\n"
+                    f"- page: {page}\n"
+                    f"- source: `{stem}`\n"
+                    f"- mode: figure\n"
+                )
+            elif mode == "ocr":
+                body = f"Mock grounded OCR page {page} ({stem})"
             else:
                 body = (
                     f"# Mock OCR\n\n"

@@ -13,7 +13,11 @@
       "type": "string",
       "description": "Extracted text as Markdown (or plain text for free mode). Never truncated by the engine."
     },
-    "mode": { "type": "string", "enum": ["markdown", "free"] },
+    "mode": {
+      "type": "string",
+      "enum": ["markdown", "free", "figure", "ocr"],
+      "description": "Engine prompt family: markdown (document layout), free (plain text), figure (charts/plots), ocr (general grounded OCR)."
+    },
     "backend": { "type": "string" },
     "elapsed_ms": { "type": "number", "minimum": 0 },
     "warnings": {

@@ -13,11 +13,7 @@ from pathlib import Path
 from ... import config, errors
 from ...envelope import OcrSkillError
 from ..models import OcrPageResult
-
-PROMPTS = {
-    "markdown": "<image>\n<|grounding|>Convert the document to markdown. ",
-    "free": "<image>\nFree OCR. ",
-}
+from ..modes import DEEPSEEK_PROMPTS, MODES
 
 
 class DeepSeekEngine:
@@ -130,12 +126,16 @@ class DeepSeekEngine:
         path = Path(image_path)
         if not path.is_file():
             raise OcrSkillError(errors.NOT_FOUND, f"page image not found: {path}")
-        if mode not in PROMPTS:
-            raise OcrSkillError(errors.INVALID_INPUT, f"unknown mode: {mode}")
+        if mode not in MODES:
+            raise OcrSkillError(
+                errors.INVALID_INPUT,
+                f"unknown mode: {mode}",
+                hint=f"Use one of: {', '.join(MODES)}",
+            )
 
         self._load()
         assert self._model is not None and self._tokenizer is not None
-        prompt = PROMPTS[mode]
+        prompt = DEEPSEEK_PROMPTS[mode]
         warnings: list[str] = []
 
         try:

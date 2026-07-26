@@ -7,12 +7,15 @@ from ..envelope import OcrSkillError
 from .adapters.deepseek import DeepSeekEngine
 from .adapters.mock import MockEngine
 from .models import OCR_CONTRACT_VERSION, OcrPageResult
+from .modes import DEEPSEEK_PROMPTS, MODES
 from .port import OCREngine
 
 __all__ = [
     "OCR_CONTRACT_VERSION",
     "OCREngine",
     "OcrPageResult",
+    "MODES",
+    "DEEPSEEK_PROMPTS",
     "MockEngine",
     "DeepSeekEngine",
     "build_engine",

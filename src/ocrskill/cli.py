@@ -15,6 +15,7 @@ from typing import Any
 from . import __version__, config
 from .doctor.runner import INIT_CONTRACT_VERSION, run_doctor, run_init
 from .envelope import ENVELOPE_CONTRACT_VERSION, Envelope, error_envelope
+from .layer2_ocr.modes import MODES
 from .layer4_agentio import AGENTIO_CONTRACT_VERSION, build_agent
 
 
@@ -89,9 +90,12 @@ def _build_parser() -> argparse.ArgumentParser:
     pe.add_argument("paths", nargs="+", help="Image or PDF path(s)")
     pe.add_argument(
         "--mode",
-        choices=("markdown", "free"),
+        choices=MODES,
         default="markdown",
-        help="markdown (default, layout-aware) or free (plain OCR)",
+        help=(
+            "Engine prompt: markdown (default, document to MD), free (plain text), "
+            "figure (charts/plots), ocr (general grounded OCR)"
+        ),
     )
     pe.add_argument("--page", type=int, default=1, help="Output page (token-budget pagination)")
     pe.add_argument(

@@ -31,7 +31,7 @@
     "source_path": { "type": "string" },
     "source_kind": { "type": "string", "enum": ["image", "pdf"] },
     "page_count": { "type": "integer", "minimum": 1 },
-    "mode": { "type": "string", "enum": ["markdown", "free"] },
+    "mode": { "type": "string", "enum": ["markdown", "free", "figure", "ocr"] },
     "markdown": {
       "type": "string",
       "description": "Full unfenced Markdown for all source pages (never truncated)."

@@ -90,8 +90,14 @@ class OcrAgent:
         def work() -> Any:
             if not paths:
                 raise OcrSkillError(errors.INVALID_INPUT, "no paths given")
-            if mode not in ("markdown", "free"):
-                raise OcrSkillError(errors.INVALID_INPUT, f"unknown mode: {mode}")
+            from ..layer2_ocr.modes import MODES
+
+            if mode not in MODES:
+                raise OcrSkillError(
+                    errors.INVALID_INPUT,
+                    f"unknown mode: {mode}",
+                    hint=f"Use one of: {', '.join(MODES)}",
+                )
 
             engine = self._engine_or_build()
             documents = []

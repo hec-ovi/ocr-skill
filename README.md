@@ -14,8 +14,10 @@ Commands:
 
 - **`init`** reports backend/model readiness
 - **`doctor`** self-tests deps and engines
-- **`extract`** OCR one or more images/PDFs → Markdown
+- **`extract`** OCR one or more images/PDFs → Markdown (`--mode markdown|free|figure|ocr`)
 - **`open`** pages through a prior extraction (nothing dropped)
+
+The agent-facing procedure lives in [`skills/ocr/SKILL.md`](skills/ocr/SKILL.md) (progressive disclosure: short YAML description at session start, full body on activate, [`skills/ocr/references/`](skills/ocr/references/) only when needed). Design notes: [`docs/SKILL_DESIGN.md`](docs/SKILL_DESIGN.md).
 
 ## Install
 
