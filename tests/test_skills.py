@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path
 
@@ -95,3 +96,21 @@ def test_description_prefers_ocr_over_guessing() -> None:
     meta, _ = _parse_skill()
     desc = meta["description"].lower()
     assert "prefer" in desc or "exact" in desc or "thumbnail" in desc or "vision" in desc
+
+
+def test_install_docs_and_plugin_manifests() -> None:
+    install = ROOT / "docs" / "INSTALL.md"
+    assert install.is_file()
+    text = install.read_text(encoding="utf-8")
+    assert "npx skills add" in text
+    assert "no mcp" in text.lower()
+    assert "uv tool install" in text
+
+    market = ROOT / ".claude-plugin" / "marketplace.json"
+    plugin = ROOT / ".claude-plugin" / "plugin.json"
+    assert market.is_file() and plugin.is_file()
+    market_data = json.loads(market.read_text(encoding="utf-8"))
+    assert market_data["plugins"][0]["name"] == "ocr"
+    plugin_data = json.loads(plugin.read_text(encoding="utf-8"))
+    assert plugin_data["name"] == "ocr"
+

@@ -21,22 +21,32 @@ The agent-facing procedure lives in [`skills/ocr/SKILL.md`](skills/ocr/SKILL.md)
 
 ## Install
 
-```bash
-# from a clone
-uv sync
-uv run ocr doctor --quick
+Full harness matrix (Claude, Codex, Grok, `npx skills add`, `uv tool install`): see
+[`docs/INSTALL.md`](docs/INSTALL.md).
 
-# real DeepSeek-OCR-2 stack
+```bash
+# agent skill (all detected CLIs)
+npx skills add hec-ovi/ocr-skill
+
+# CLI on PATH
+uv tool install git+https://github.com/hec-ovi/ocr-skill
+ocr doctor --quick
+
+# from a clone (dev)
+uv sync
+OCR_BACKEND=mock uv run pytest
+
+# real DeepSeek-OCR-2
 uv sync --extra deepseek
 export OCR_BACKEND=deepseek
-export OCR_MODEL_PATH=/path/to/local/DeepSeek-OCR-2   # optional if using HF cache
+export OCR_MODEL_PATH=/path/to/local/DeepSeek-OCR-2   # if weights are local
 uv run ocr init
 ```
 
-Or without cloning:
+One-shot without install:
 
 ```bash
-uvx ocr-skill doctor
+uvx --from git+https://github.com/hec-ovi/ocr-skill ocr doctor --quick
 ```
 
 ## Usage

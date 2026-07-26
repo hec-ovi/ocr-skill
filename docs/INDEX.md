@@ -13,6 +13,8 @@ Map "what to change" to the one folder to open. Outsiders read contracts only.
 | Portable skill instructions | `skills/ocr/SKILL.md` |
 | Skill level-3 references | `skills/ocr/references/` |
 | Skill design / progressive disclosure | `docs/SKILL_DESIGN.md` |
+| Install across CLIs | `docs/INSTALL.md` |
+| Claude plugin manifests | `.claude-plugin/` |
 | Model research notes | `docs/DEEPSEEK_OCR_2.md` |
 | Engine mode ↔ prompt map | `src/ocrskill/layer2_ocr/modes.py` |
 | Envelope wrapper | `contracts/envelope.schema.json` + `src/ocrskill/envelope.py` |
