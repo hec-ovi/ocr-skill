@@ -1,7 +1,7 @@
 {
   "name": "ocr",
   "displayName": "OCR",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Extract text from images and PDFs into Markdown for AI agents. Portable SKILL, ocr CLI (extract/open/init/doctor), contract layers, untrusted fence, DeepSeek-OCR-2 engine. No MCP; agents shell out over stdio.",
   "author": {
     "name": "Hector Oviedo",

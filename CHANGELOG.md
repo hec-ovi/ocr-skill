@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.2
+
+- Skill description forces load-first for image/PDF questions; bans tesseract/pip/apt OCR paths; list workspace if paths omitted.
+
 ## 0.3.1
 
 - Resolve CLI snippet always exits 0 when a launcher is found (no false bash error on `command -v` miss).

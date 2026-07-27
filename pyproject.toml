@@ -1,6 +1,6 @@
 [project]
 name = "ocr-skill"
-version = "0.3.1"
+version = "0.3.2"
 description = "Image and PDF to Markdown OCR skill and CLI for AI agents (DeepSeek-OCR-2, contract-driven, harness-portable, no MCP)"
 readme = "README.md"
 requires-python = ">=3.11"
