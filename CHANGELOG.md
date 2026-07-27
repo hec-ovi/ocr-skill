@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.1
+
+- Resolve CLI snippet always exits 0 when a launcher is found (no false bash error on `command -v` miss).
+- `init`/`doctor` `next_actions` only for the active broken backend; quiet when llamacpp is ready.
+
 ## 0.3.0
 
 ### Agent-friendly launcher (blockchain-skill pattern)

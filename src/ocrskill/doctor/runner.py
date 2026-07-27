@@ -101,19 +101,26 @@ def run_doctor(*, quick: bool = False) -> dict[str, Any]:
             status, ready = "broken", False
 
     next_actions: list[str] = []
-    if not llama_ok and backend in ("auto", "llamacpp"):
+    # Only suggest fixes for the active backend (or for auto when no engine works).
+    if backend == "llamacpp" and not llama_ok:
         next_actions.append(
             "Start Vulkan OCR server: "
             "docker compose -f docker/docker-compose.yml --env-file docker/.env up -d"
         )
         next_actions.append("Set OCR_BACKEND=llamacpp and OCR_LLAMA_URL=http://127.0.0.1:8090")
-    if not deep_ok and backend in ("auto", "deepseek"):
+    elif backend == "deepseek" and not deep_ok:
         next_actions.append("Install deepseek extra: uv sync --extra deepseek")
         next_actions.append(
             "Set OCR_MODEL_PATH to a local checkpoint under ~/models if already downloaded"
         )
-    if backend == "auto" and not llama_ok and not deep_ok:
+    elif backend == "auto" and not llama_ok and not deep_ok:
+        next_actions.append(
+            "Start Vulkan OCR server: "
+            "docker compose -f docker/docker-compose.yml --env-file docker/.env up -d"
+        )
+        next_actions.append("Or: uv sync --extra deepseek and OCR_BACKEND=deepseek")
         next_actions.append("Or set OCR_BACKEND=mock for offline/tests")
+    # When auto and at least one production engine is up: no next_actions noise.
 
     return {
         "status": status,

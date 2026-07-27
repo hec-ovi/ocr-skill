@@ -19,7 +19,7 @@ compatibility: >-
   OCR_BACKEND=mock is for tests only.
 metadata:
   author: Hector Oviedo
-  version: "0.3.0"
+  version: "0.3.1"
   engine: deepseek-ai/DeepSeek-OCR-2
 allowed-tools: Bash(ocr:*) Bash(ocr-skill:*) Bash(.noob/skills/ocr/ocr:*) Bash(uv:*) Bash(uvx:*)
 ---
@@ -33,26 +33,29 @@ Every action is the `ocr` CLI: one process, JSON Envelope on stdout when you pas
 
 Skill packs ship an `ocr` launcher next to `SKILL.md` (same pattern as agent-wallet). It creates a local `.venv` on first run via `uv`. **Do not** `pip install`, poke `PYTHONPATH`, or hunt for torch yourself.
 
-**Resolve once** (first hit that prints a path wins; reuse that path for the rest of the session):
+**Resolve once** (prints one path; always exits 0 when found). Reuse that path for the rest of the session:
 
 ```bash
-test -x .noob/skills/ocr/ocr && echo .noob/skills/ocr/ocr
-test -x .noob/skills/ocr/bin/ocr && echo .noob/skills/ocr/bin/ocr
-command -v ocr-skill
-# only if `ocr --version` prints "ocr-skill":
-command -v ocr
-test -x ./ocr && echo ./ocr
+OCR_CLI=$(
+  if test -x .noob/skills/ocr/ocr; then echo .noob/skills/ocr/ocr
+  elif test -x .noob/skills/ocr/bin/ocr; then echo .noob/skills/ocr/bin/ocr
+  elif command -v ocr-skill >/dev/null 2>&1; then command -v ocr-skill
+  elif command -v ocr >/dev/null 2>&1 && ocr --version 2>/dev/null | grep -q ocr-skill; then command -v ocr
+  elif test -x ./ocr; then echo ./ocr
+  else echo ""; fi
+)
+test -n "$OCR_CLI" && echo "$OCR_CLI"
 ```
 
-Examples below use `ocr`; substitute your resolved path (e.g. `.noob/skills/ocr/ocr`).
+If empty, stop and report that the skill pack is missing `./ocr`. Examples below use `$OCR_CLI` (often `.noob/skills/ocr/ocr`).
 
 **Init once per session:**
 
 ```bash
-ocr init --quick --json
+$OCR_CLI init --quick --json
 ```
 
-Read `data.ready`, `data.backend`, `data.next_actions`. If not ready, follow `next_actions` only. Do not hand-probe the install.
+Read `data.ready` and `data.backend`. If `ready` is true, continue (ignore optional backend warnings). If not ready, follow `data.next_actions` only. Do not hand-probe the install.
 
 First launcher run may take a few seconds (uv installs Pillow/pypdfium2/pydantic into the skill pack `.venv`). Later runs are local.
 
@@ -119,9 +122,9 @@ Shortcuts: multi-page PDF → `markdown`; whiteboard photo → `ocr` or `free`; 
 ### 1) Extract
 
 ```bash
-ocr extract "<abs-path>" --json
-ocr extract "<abs-path>" --mode free --json
-ocr extract "<pdf>" "<image>" --json
+$OCR_CLI extract "<abs-path>" --json
+$OCR_CLI extract "<abs-path>" --mode free --json
+$OCR_CLI extract "<pdf>" "<image>" --json
 ```
 
 Useful flags:
@@ -149,7 +152,7 @@ Context discipline: load `content` → answer → if `has_more` and still needed
 ### 3) Open more pages
 
 ```bash
-ocr open "<handle>" --page 2 --json
+$OCR_CLI open "<handle>" --page 2 --json
 ```
 
 `not_opened` means re-run `extract` (store may have been cleared).

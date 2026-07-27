@@ -32,7 +32,7 @@ def test_launcher_runs_version() -> None:
     )
     assert proc.returncode == 0, proc.stderr
     assert "ocr-skill" in proc.stdout
-    assert "0.3.0" in proc.stdout
+    assert "0.3.1" in proc.stdout
 
 
 def test_launcher_doctor_quick() -> None:
