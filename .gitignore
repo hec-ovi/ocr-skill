@@ -16,9 +16,10 @@ build/
 dist/
 *.so
 
-# Virtualenv / uv
+# Virtualenv / uv / skill-local bootstrap
 .venv/
 venv/
+.tools/
 .python-version
 
 # Test / coverage / cache

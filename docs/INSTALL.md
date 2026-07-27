@@ -61,7 +61,7 @@ uvx --from git+https://github.com/hec-ovi/ocr-skill ocr doctor --quick
 uvx --from git+https://github.com/hec-ovi/ocr-skill ocr extract ./scan.png --json
 ```
 
-`uvx` caches the build, so the second run is fast. Pin a ref with `@v0.2.0` or `@<sha>` on
+`uvx` caches the build, so the second run is fast. Pin a ref with `@v0.3.0` or `@<sha>` on
 the git URL for reproducibility. To put `ocr` on PATH permanently:
 
 ```bash
@@ -114,6 +114,16 @@ local path:
 ```text
 /skills add /path/to/ocr-skill
 ```
+
+The pack includes `./ocr` (launcher). First agent call:
+
+```bash
+.noob/skills/ocr/ocr init --quick --json
+.noob/skills/ocr/ocr extract /abs/path/to/file.pdf --json
+```
+
+That launcher creates `.noob/skills/ocr/.venv` via `uv` (network once). Do not run `pip`
+or set `PYTHONPATH` by hand.
 
 ## Claude Code
 

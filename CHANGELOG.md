@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.0
+
+### Agent-friendly launcher (blockchain-skill pattern)
+
+- Ship `./ocr`, `./ocr-skill`, and `bin/ocr`: self-bootstrapping entrypoints that
+  create a skill-pack `.venv` via `uv sync --no-dev` on first run, then exec the CLI.
+- Agents resolve `.noob/skills/ocr/ocr` (or PATH) and never hand-probe pip/PYTHONPATH.
+- SKILL.md rewritten with resolve-CLI-first workflow; anti-patterns ban pip install.
+- Cold pack bootstrap tested (~1s with cache); subsequent runs use pack-local `.venv`.
+
 ## 0.2.0
 
 ### Packaging (install fix)

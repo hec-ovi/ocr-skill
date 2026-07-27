@@ -10,6 +10,7 @@ Map "what to change" to the one folder to open. Outsiders read contracts only.
 | Agent extract/open face | `src/ocrskill/layer4_agentio/` + `contracts/agent-io.schema.json` |
 | CLI flags / human output | `src/ocrskill/cli.py` |
 | Doctor / init | `src/ocrskill/doctor/` |
+| Agent launcher (bootstrap .venv) | `ocr`, `ocr-skill`, `bin/ocr` |
 | Portable skill instructions (canonical) | `skills/ocr/SKILL.md` |
 | Skill level-3 references | `skills/ocr/references/` |
 | Root skill copy (noob install) | `SKILL.md` + `references/` (synced) |
