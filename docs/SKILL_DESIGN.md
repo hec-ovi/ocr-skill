@@ -9,8 +9,8 @@ From the [Agent Skills open standard](https://agentskills.io/specification) and 
 | Level | What | When loaded | Budget |
 |---|---|---|---|
 | 1 Metadata | YAML `name` + `description` | Every session, all skills | ~100 tokens each; `description` max **1024 chars** |
-| 2 Instructions | Full `skills/ocr/SKILL.md` body | Only when the skill activates | Prefer **under ~5000 tokens / 500 lines** |
-| 3 Resources | `skills/ocr/references/*` | Only when SKILL.md points the agent there | Unbounded |
+| 2 Instructions | Full `SKILL.md` body (canonical: `skills/ocr/SKILL.md`) | Only when the skill activates | Prefer **under ~5000 tokens / 500 lines** |
+| 3 Resources | `references/*` beside that SKILL.md | Only when SKILL.md points the agent there | Unbounded |
 
 Implications for this repo:
 
@@ -39,7 +39,9 @@ Modeled on research-skill / websearch-skill patterns that work in production age
 ## Isolation vs skill packaging
 
 - Runtime isolation stays in contract layers (`contracts/`, `src/ocrskill/layer*`).
-- The skill package is only procedure for agents: `skills/ocr/SKILL.md` + optional references.
+- The skill package is only procedure for agents: `SKILL.md` + optional `references/`.
+- Install surfaces (root, `skills/ocr/`, Claude/Codex plugins) are identical copies; edit
+  `skills/ocr/` then run `scripts/sync-skill-copies.py`.
 - No MCP: every harness shells out to the same `ocr` / `ocr-skill` entrypoint (stdio).
 
 ## Model prompts (engine, not skill)

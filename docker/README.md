@@ -22,11 +22,11 @@ ocr extract ./scan.png --json
 About 3.6 GB (Q8_0 + mmproj):
 
 ```bash
-mkdir -p /home/hec/models/gguf/DeepSeek-OCR-2
+mkdir -p ~/models/gguf/DeepSeek-OCR-2
 uvx --from 'huggingface_hub[cli]' hf download sabafallah/DeepSeek-OCR-2-GGUF \
   deepseek-ocr-2-q8_0.gguf \
   mmproj-deepseek-ocr-2-q8_0.gguf \
-  --local-dir /home/hec/models/gguf/DeepSeek-OCR-2
+  --local-dir ~/models/gguf/DeepSeek-OCR-2
 ```
 
 Official **DeepSeek-OCR (v1)** GGUF (ggml-org) also works if you point `OCR_MODEL` /

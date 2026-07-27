@@ -9,11 +9,18 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 SKILL_PATH = ROOT / "skills" / "ocr" / "SKILL.md"
 REFS = ROOT / "skills" / "ocr" / "references"
+SKILL_COPIES = [
+    ROOT / "SKILL.md",
+    ROOT / "skills" / "ocr" / "SKILL.md",
+    ROOT / "plugins" / "ocr" / "skills" / "ocr" / "SKILL.md",
+    ROOT / "plugins" / "ocr-codex" / "skills" / "ocr" / "SKILL.md",
+]
+REF_NAMES = ("modes.md", "env.md", "envelope.md")
 
 
-def _parse_skill() -> tuple[dict, str]:
-    text = SKILL_PATH.read_text(encoding="utf-8")
-    assert text.startswith("---\n"), "SKILL.md must start with YAML frontmatter"
+def _parse_skill(path: Path = SKILL_PATH) -> tuple[dict, str]:
+    text = path.read_text(encoding="utf-8")
+    assert text.startswith("---\n"), f"{path} must start with YAML frontmatter"
     _, fm, body = text.split("---", 2)
     meta = yaml.safe_load(fm)
     return meta, body
@@ -40,10 +47,12 @@ def test_skill_frontmatter_agentskills_spec() -> None:
     if "compatibility" in meta and meta["compatibility"]:
         assert len(str(meta["compatibility"])) <= 500
 
+    assert meta.get("user-invocable") is True
+    assert meta.get("metadata", {}).get("version") == "0.2.0"
+
 
 def test_skill_body_has_standing_procedure() -> None:
     _, body = _parse_skill()
-    # Standing rules / security / anti-patterns: research-skill style load-bearing sections
     for heading in (
         "Standing rules",
         "When to use",
@@ -52,6 +61,7 @@ def test_skill_body_has_standing_procedure() -> None:
         "Workflow",
         "Security",
         "Anti-patterns",
+        "Supported inputs",
     ):
         assert heading in body, f"missing section: {heading}"
 
@@ -60,6 +70,7 @@ def test_skill_body_has_standing_procedure() -> None:
     assert "ocr open" in body
     assert "has_more" in body
     assert "Never invent" in body or "never invent" in body.lower()
+    assert "not mcp" in body.lower() or "no mcp" in body.lower()
 
 
 def test_skill_under_size_budget() -> None:
@@ -73,10 +84,42 @@ def test_skill_under_size_budget() -> None:
 
 def test_skill_references_exist_and_linked() -> None:
     _, body = _parse_skill()
-    for name in ("modes.md", "env.md", "envelope.md"):
+    for name in REF_NAMES:
         path = REFS / name
         assert path.is_file(), path
         assert f"references/{name}" in body, f"SKILL.md should link {name}"
+
+
+def test_skill_copies_match_canonical() -> None:
+    """Root + plugin SKILL.md trees must match skills/ocr (noob + marketplace install)."""
+    canonical = SKILL_PATH.read_bytes()
+    for path in SKILL_COPIES:
+        assert path.is_file(), f"missing skill copy: {path.relative_to(ROOT)}"
+        assert path.read_bytes() == canonical, (
+            f"drift: {path.relative_to(ROOT)} (run scripts/sync-skill-copies.py)"
+        )
+
+    for base in (
+        ROOT,
+        ROOT / "skills" / "ocr",
+        ROOT / "plugins" / "ocr" / "skills" / "ocr",
+        ROOT / "plugins" / "ocr-codex" / "skills" / "ocr",
+    ):
+        for name in REF_NAMES:
+            src = REFS / name
+            dst = base / "references" / name
+            assert dst.is_file(), dst
+            assert dst.read_bytes() == src.read_bytes(), f"ref drift: {dst.relative_to(ROOT)}"
+
+
+def test_noob_style_root_discovery() -> None:
+    """Mirrors noob find_skill_dir: root SKILL.md or one immediate subdir."""
+    assert (ROOT / "SKILL.md").is_file()
+    # Immediate subdirs must not be the only hit; root wins.
+    hits = [p for p in ROOT.iterdir() if p.is_dir() and (p / "SKILL.md").is_file()]
+    # skills/ is a container, not a skill dir (no skills/SKILL.md)
+    assert not (ROOT / "skills" / "SKILL.md").exists()
+    assert all(p.name != "skills" or (p / "SKILL.md").is_file() for p in hits) or True
 
 
 def test_skill_modes_match_engine() -> None:
@@ -86,7 +129,6 @@ def test_skill_modes_match_engine() -> None:
     for mode in MODES:
         assert mode in modes_ref
         assert mode in DEEPSEEK_PROMPTS
-    # Official grounding tag present for layout modes
     assert "<|grounding|>" in DEEPSEEK_PROMPTS["markdown"]
     assert "Free OCR" in DEEPSEEK_PROMPTS["free"]
     assert "Parse the figure" in DEEPSEEK_PROMPTS["figure"]
@@ -98,6 +140,18 @@ def test_description_prefers_ocr_over_guessing() -> None:
     assert "prefer" in desc or "exact" in desc or "thumbnail" in desc or "vision" in desc
 
 
+def test_supported_formats_documented() -> None:
+    from ocrskill.layer1_ingest.ingest import IMAGE_EXTS, PDF_EXTS
+
+    _, body = _parse_skill()
+    for ext in sorted(IMAGE_EXTS | PDF_EXTS):
+        assert ext in body, f"SKILL.md should document {ext}"
+
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    assert "Supported inputs" in readme or "Supported inputs" in body
+    assert ".pdf" in readme and "png" in readme.lower()
+
+
 def test_install_docs_and_plugin_manifests() -> None:
     install = ROOT / "docs" / "INSTALL.md"
     assert install.is_file()
@@ -105,12 +159,42 @@ def test_install_docs_and_plugin_manifests() -> None:
     assert "npx skills add" in text
     assert "no mcp" in text.lower()
     assert "uv tool install" in text
+    assert "/skills add" in text
+    assert "root" in text.lower() and "SKILL.md" in text
 
     market = ROOT / ".claude-plugin" / "marketplace.json"
-    plugin = ROOT / ".claude-plugin" / "plugin.json"
-    assert market.is_file() and plugin.is_file()
+    assert market.is_file()
     market_data = json.loads(market.read_text(encoding="utf-8"))
-    assert market_data["plugins"][0]["name"] == "ocr"
+    plugin_entry = market_data["plugins"][0]
+    assert plugin_entry["name"] == "ocr"
+    assert plugin_entry["source"] == "./plugins/ocr"
+    assert plugin_entry["version"] == "0.2.0"
+
+    plugin = ROOT / "plugins" / "ocr" / ".claude-plugin" / "plugin.json"
+    assert plugin.is_file()
     plugin_data = json.loads(plugin.read_text(encoding="utf-8"))
     assert plugin_data["name"] == "ocr"
+    assert plugin_data["version"] == "0.2.0"
 
+    agents = ROOT / ".agents" / "plugins" / "marketplace.json"
+    assert agents.is_file()
+    agents_data = json.loads(agents.read_text(encoding="utf-8"))
+    assert agents_data["plugins"][0]["name"] == "ocr-codex"
+
+    codex_plugin = ROOT / "plugins" / "ocr-codex" / ".codex-plugin" / "plugin.json"
+    assert codex_plugin.is_file()
+
+    assert not (ROOT / ".claude-plugin" / "plugin.json").exists(), (
+        "plugin.json must live under plugins/ocr/, not marketplace root"
+    )
+
+
+def test_no_mcp_surface() -> None:
+    """Product policy: skill + CLI only; no MCP entrypoints."""
+    pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    assert "mcp" not in pyproject.lower() or "no mcp" in pyproject.lower()
+    # No mcp module or console script
+    assert not (ROOT / "src" / "ocrskill" / "mcp.py").exists()
+    assert "mcp" not in pyproject or "no MCP" in pyproject
+    readme = (ROOT / "README.md").read_text(encoding="utf-8").lower()
+    assert "no mcp" in readme

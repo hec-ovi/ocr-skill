@@ -22,7 +22,7 @@ DeepEncoder V2:
 - Uses an **LLM-style encoder** (Qwen2-0.5B class) instead of a plain CLIP vision tower
 - **Reorders visual tokens** by semantic / reading structure before the decoder runs
 - Uses learnable causal-flow queries and a special attention mask so the encoder can do causal-style reasoning over tokens
-- Keeps **high compression**: typically on the order of **256–1,120 visual tokens per page** (budget-dependent)
+- Keeps **high compression**: typically on the order of **256-1,120 visual tokens per page** (budget-dependent)
 
 Goal: reading order closer to a human (columns, tables, formulas) at a small token budget.
 

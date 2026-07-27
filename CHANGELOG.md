@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.2.0
+
+### Packaging (install fix)
+
+- Root `SKILL.md` + `references/` so noob `/skills add hec-ovi/ocr-skill` and other
+  root-discovery installers find the skill (they do not walk `skills/<name>/`).
+- Claude plugin moved to `plugins/ocr/` with marketplace `source: "./plugins/ocr"`.
+- Codex plugin + marketplace: `plugins/ocr-codex/`, `.agents/plugins/marketplace.json`.
+- Identical skill copies kept in sync via `scripts/sync-skill-copies.py`.
+
+### Product
+
+- Explicit supported formats table (images + PDF) in skill body and README.
+- Senior architecture and install docs (`docs/ARCHITECTURE.md`, expanded INSTALL).
+- Version metadata 0.2.0; no MCP (stdio skill + CLI only, unchanged policy).
+
 ## 0.1.0
 
 - Initial skill: `ocr extract` / `ocr open` / `ocr init` / `ocr doctor`
