@@ -32,7 +32,7 @@ def test_launcher_runs_version() -> None:
     )
     assert proc.returncode == 0, proc.stderr
     assert "ocr-skill" in proc.stdout
-    assert "0.3.2" in proc.stdout
+    assert "0.3.3" in proc.stdout
 
 
 def test_launcher_doctor_quick() -> None:
@@ -54,6 +54,7 @@ def test_launcher_doctor_quick() -> None:
 
 def test_skill_md_forbids_hand_pip() -> None:
     body = (ROOT / "skills" / "ocr" / "SKILL.md").read_text(encoding="utf-8").lower()
-    assert "do not" in body and "pip" in body
-    assert "resolve" in body
+    assert "pip" in body
+    assert "extract" in body
     assert ".noob/skills/ocr/ocr" in body
+    assert "tesseract" in body

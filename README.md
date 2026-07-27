@@ -4,7 +4,7 @@ Local image and PDF to Markdown for AI agents. Stdio CLI plus a portable `SKILL.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
-[![Version](https://img.shields.io/badge/version-0.3.2-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.3.3-blue.svg)](CHANGELOG.md)
 [![Spec](https://img.shields.io/badge/Spec-agentskills.io-7B3FA0.svg)](https://agentskills.io/specification)
 
 ## What it is

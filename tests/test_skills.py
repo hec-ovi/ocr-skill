@@ -48,33 +48,30 @@ def test_skill_frontmatter_agentskills_spec() -> None:
         assert len(str(meta["compatibility"])) <= 500
 
     assert meta.get("user-invocable") is True
-    assert meta.get("metadata", {}).get("version") == "0.3.2"
+    assert meta.get("metadata", {}).get("version") == "0.3.3"
 
 
 def test_skill_body_has_standing_procedure() -> None:
     _, body = _parse_skill()
     for heading in (
-        "Start here",
-        "Standing rules",
-        "When to use",
-        "When NOT to use",
-        "Mode selection",
-        "Workflow",
+        "Resolve CLI once",
+        "Verbs",
         "Security",
         "Anti-patterns",
-        "Supported inputs",
+        "Inputs",
     ):
         assert heading in body, f"missing section: {heading}"
 
     assert "UNTRUSTED-OCR-CONTENT" in body
-    assert "ocr extract" in body
-    assert "ocr open" in body
+    assert "extract" in body
+    assert "open" in body
     assert "has_more" in body
     assert "Never invent" in body or "never invent" in body.lower()
     assert "not mcp" in body.lower() or "no mcp" in body.lower()
-    # agent-wallet style resolve + no hand install
     assert ".noob/skills/ocr/ocr" in body
-    assert "pip install" in body.lower() or "hand-probe" in body.lower()
+    # direct verb, no mandatory init dance
+    assert "No separate init" in body or "no mandatory" in body.lower() or "No separate init step" in body
+    assert "tesseract" in body.lower()
 
 
 def test_skill_under_size_budget() -> None:
@@ -172,13 +169,13 @@ def test_install_docs_and_plugin_manifests() -> None:
     plugin_entry = market_data["plugins"][0]
     assert plugin_entry["name"] == "ocr"
     assert plugin_entry["source"] == "./plugins/ocr"
-    assert plugin_entry["version"] == "0.3.2"
+    assert plugin_entry["version"] == "0.3.3"
 
     plugin = ROOT / "plugins" / "ocr" / ".claude-plugin" / "plugin.json"
     assert plugin.is_file()
     plugin_data = json.loads(plugin.read_text(encoding="utf-8"))
     assert plugin_data["name"] == "ocr"
-    assert plugin_data["version"] == "0.3.2"
+    assert plugin_data["version"] == "0.3.3"
 
     agents = ROOT / ".agents" / "plugins" / "marketplace.json"
     assert agents.is_file()

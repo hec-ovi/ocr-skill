@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.3
+
+- Skill body simplified to direct verbs: `extract` / `open` (no mandatory init).
+- Resolve CLI is three lines; doctor only after extract fails.
+
 ## 0.3.2
 
 - Skill description forces load-first for image/PDF questions; bans tesseract/pip/apt OCR paths; list workspace if paths omitted.
