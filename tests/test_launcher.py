@@ -1,4 +1,4 @@
-"""Self-bootstrapping ./ocr launcher (agent skill pack entrypoint)."""
+"""Bundled ./ocr launcher (agent skill pack entrypoint)."""
 
 from __future__ import annotations
 
@@ -18,6 +18,14 @@ def test_launcher_scripts_exist_and_executable() -> None:
         assert mode & stat.S_IXUSR, f"{rel} must be executable"
 
 
+def test_bundled_binary_shipped() -> None:
+    """Agent packs must ship dist/ocr (musl onefile); no loose pip deps at runtime."""
+    bundle = ROOT / "dist" / "ocr"
+    assert bundle.is_file(), "dist/ocr missing; run ./scripts/build-bundle.sh"
+    assert bundle.stat().st_mode & stat.S_IXUSR
+    assert bundle.stat().st_size > 1_000_000
+
+
 def test_launcher_runs_version() -> None:
     env = os.environ.copy()
     env["OCR_BACKEND"] = "mock"
@@ -32,7 +40,7 @@ def test_launcher_runs_version() -> None:
     )
     assert proc.returncode == 0, proc.stderr
     assert "ocr-skill" in proc.stdout
-    assert "0.3.3" in proc.stdout
+    assert "0.4.0" in proc.stdout
 
 
 def test_launcher_doctor_quick() -> None:
@@ -58,3 +66,4 @@ def test_skill_md_forbids_hand_pip() -> None:
     assert "extract" in body
     assert ".noob/skills/ocr/ocr" in body
     assert "tesseract" in body
+    assert "bundled" in body or "binary" in body or "dist/ocr" in body

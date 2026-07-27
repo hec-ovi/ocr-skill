@@ -1,19 +1,16 @@
 #!/usr/bin/env bash
-# PATH / skill-pack launcher for the ocr CLI.
-# Same idea as blockchain-skill's bin/agent-wallet: one entry the agent can exec
-# without hand-probing pip, PYTHONPATH, or torch.
+# Skill-pack CLI entry. Prefers the bundled static binary (dist/ocr), same
+# idea as blockchain-skill's dist/agent-wallet.mjs: agents do not install deps.
 #
-# Fast path: skill-local .venv/bin/ocr if it already runs.
-# First run: uv sync --no-dev into .venv (needs uv + network once), then exec.
-#
-# Root layout (skill pack or clone):
-#   <root>/bin/ocr          this file
+# Layout:
 #   <root>/ocr              thin wrapper -> bin/ocr
-#   <root>/pyproject.toml
-#   <root>/src/ocrskill/
+#   <root>/bin/ocr          this file
+#   <root>/dist/ocr         self-contained binary (musl Linux x86_64 for noob)
+#   <root>/src/...          source (dev only)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+BUNDLE="$ROOT/dist/ocr"
 VENV_OCR="$ROOT/.venv/bin/ocr"
 
 die() {
@@ -21,53 +18,44 @@ die() {
   exit 127
 }
 
+# 1) Bundled binary (agent skill packs). Probe --version so a glibc host that
+# cannot exec the musl ELF falls through cleanly.
+if [[ -x "$BUNDLE" ]]; then
+  if "$BUNDLE" --version >/dev/null 2>&1; then
+    exec "$BUNDLE" "$@"
+  fi
+fi
+
+# 2) Existing working venv (dev checkout after uv sync)
+if [[ -x "$VENV_OCR" ]] && "$VENV_OCR" --version >/dev/null 2>&1; then
+  exec "$VENV_OCR" "$@"
+fi
+
+# 3) Dev bootstrap via uv (never for agents: they should get dist/ocr in the pack)
 find_uv() {
   if command -v uv >/dev/null 2>&1; then
     command -v uv
     return 0
   fi
   local c
-  for c in "$ROOT/.tools/uv" "$ROOT/.tools/bin/uv" "$HOME/.local/bin/uv" /usr/local/bin/uv; do
-    if [[ -x "$c" ]]; then
-      echo "$c"
-      return 0
-    fi
+  for c in "$HOME/.local/bin/uv" /usr/local/bin/uv; do
+    [[ -x "$c" ]] && { echo "$c"; return 0; }
   done
   return 1
 }
 
-# Prefer an existing working install. Never re-sync just because a marker is missing
-# (re-running `uv sync --no-dev` would strip a developer .venv of pytest/ruff).
-if [[ -x "$VENV_OCR" ]] && "$VENV_OCR" --version >/dev/null 2>&1; then
+uv_bin=""
+if uv_bin="$(find_uv)"; then
+  [[ -f "$ROOT/pyproject.toml" ]] || die "pyproject.toml missing under $ROOT"
+  if [[ -f "$ROOT/uv.lock" ]]; then
+    (cd "$ROOT" && "$uv_bin" sync --no-dev --frozen --project "$ROOT") \
+      || (cd "$ROOT" && "$uv_bin" sync --no-dev --project "$ROOT") \
+      || die "uv sync failed"
+  else
+    (cd "$ROOT" && "$uv_bin" sync --no-dev --project "$ROOT") || die "uv sync failed"
+  fi
+  [[ -x "$VENV_OCR" ]] || die "sync finished but $VENV_OCR missing"
   exec "$VENV_OCR" "$@"
 fi
 
-uv_bin=""
-if uv_bin="$(find_uv)"; then
-  :
-elif command -v curl >/dev/null 2>&1; then
-  mkdir -p "$ROOT/.tools"
-  if curl -fsSL https://astral.sh/uv/install.sh | env UV_INSTALL_DIR="$ROOT/.tools" sh >/dev/null 2>&1; then
-    if [[ -x "$ROOT/.tools/bin/uv" && ! -x "$ROOT/.tools/uv" ]]; then
-      ln -sfn "$ROOT/.tools/bin/uv" "$ROOT/.tools/uv"
-    fi
-    uv_bin="$(find_uv || true)"
-  fi
-fi
-[[ -n "${uv_bin}" ]] || die "uv is required to bootstrap deps once. Install: https://docs.astral.sh/uv/  then re-run this launcher. Or: uv tool install git+https://github.com/hec-ovi/ocr-skill"
-
-[[ -f "$ROOT/pyproject.toml" ]] || die "pyproject.toml missing under $ROOT (broken skill pack)"
-
-# Fresh skill packs only: create .venv with runtime deps.
-if [[ -f "$ROOT/uv.lock" ]]; then
-  if ! (cd "$ROOT" && "$uv_bin" sync --no-dev --frozen --project "$ROOT"); then
-    (cd "$ROOT" && "$uv_bin" sync --no-dev --project "$ROOT") || die "uv sync failed under $ROOT"
-  fi
-else
-  (cd "$ROOT" && "$uv_bin" sync --no-dev --project "$ROOT") || die "uv sync failed under $ROOT"
-fi
-
-[[ -x "$VENV_OCR" ]] || die "sync finished but $VENV_OCR is missing"
-"$VENV_OCR" --version >/dev/null 2>&1 || die "installed ocr binary failed --version"
-
-exec "$VENV_OCR" "$@"
+die "no runnable CLI. Skill packs must ship dist/ocr. Dev: run scripts/build-bundle.sh or uv sync."

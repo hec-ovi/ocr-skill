@@ -48,7 +48,7 @@ def test_skill_frontmatter_agentskills_spec() -> None:
         assert len(str(meta["compatibility"])) <= 500
 
     assert meta.get("user-invocable") is True
-    assert meta.get("metadata", {}).get("version") == "0.3.3"
+    assert meta.get("metadata", {}).get("version") == "0.4.0"
 
 
 def test_skill_body_has_standing_procedure() -> None:
@@ -169,13 +169,13 @@ def test_install_docs_and_plugin_manifests() -> None:
     plugin_entry = market_data["plugins"][0]
     assert plugin_entry["name"] == "ocr"
     assert plugin_entry["source"] == "./plugins/ocr"
-    assert plugin_entry["version"] == "0.3.3"
+    assert plugin_entry["version"] == "0.4.0"
 
     plugin = ROOT / "plugins" / "ocr" / ".claude-plugin" / "plugin.json"
     assert plugin.is_file()
     plugin_data = json.loads(plugin.read_text(encoding="utf-8"))
     assert plugin_data["name"] == "ocr"
-    assert plugin_data["version"] == "0.3.3"
+    assert plugin_data["version"] == "0.4.0"
 
     agents = ROOT / ".agents" / "plugins" / "marketplace.json"
     assert agents.is_file()

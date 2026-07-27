@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.0
+
+- **Bundled CLI:** ship `dist/ocr` (PyInstaller onefile, Linux x86_64 musl) so agent
+  skill packs run with zero Python/uv/pip install (blockchain-skill style).
+- Launcher prefers `dist/ocr`; uv/venv is dev fallback only.
+- Skill body: direct `extract` / `open`; no init step.
+
 ## 0.3.3
 
 - Skill body simplified to direct verbs: `extract` / `open` (no mandatory init).

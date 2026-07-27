@@ -4,14 +4,14 @@ Local image and PDF to Markdown for AI agents. Stdio CLI plus a portable `SKILL.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
-[![Version](https://img.shields.io/badge/version-0.3.3-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.4.0-blue.svg)](CHANGELOG.md)
 [![Spec](https://img.shields.io/badge/Spec-agentskills.io-7B3FA0.svg)](https://agentskills.io/specification)
 
 ## What it is
 
 When a user hands an agent a scan, screenshot, or PDF and needs **exact wording**, the agent shells out to `ocr` and reads Markdown back. Output is fenced as untrusted document data and paginated when long, so large PDFs do not blow the tool-result budget.
 
-Skill packs ship a self-bootstrapping **`./ocr` launcher** (same idea as [blockchain-skill](https://github.com/hec-ovi/blockchain-skill)'s `agent-wallet`): first run uses `uv` to create a pack-local `.venv` with Pillow/pypdfium2/pydantic; later runs are offline. Agents should not `pip install` by hand.
+Skill packs ship a **bundled CLI** at `dist/ocr` (~27 MiB musl onefile, same idea as blockchain-skill's `dist/agent-wallet.mjs`). Agents run `.noob/skills/ocr/ocr extract ...` with no pip/uv/Python install. Rebuild: `./scripts/build-bundle.sh`.
 
 Commands:
 
@@ -132,7 +132,8 @@ Every `--json` response:
 
 | Path | Consumer |
 |---|---|
-| `ocr`, `ocr-skill`, `bin/ocr` | Agent launcher (bootstraps `.venv` via uv) |
+| `dist/ocr` | Bundled binary (musl; agent runtime) |
+| `ocr`, `ocr-skill`, `bin/ocr` | Launcher (prefers `dist/ocr`) |
 | `SKILL.md` + `references/` | noob `/skills add`, direct clone |
 | `skills/ocr/` | `npx skills add` container layout |
 | `plugins/ocr/` | Claude Code plugin |

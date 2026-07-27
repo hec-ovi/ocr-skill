@@ -13,7 +13,10 @@ __pycache__/
 *.egg-info/
 .eggs/
 build/
-dist/
+# Python build trees
+/build/
+*.egg-info/
+# Bundled CLI lives in dist/; do not ignore it
 *.so
 
 # Virtualenv / uv / skill-local bootstrap
