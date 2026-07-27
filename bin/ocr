@@ -1,61 +1,25 @@
 #!/usr/bin/env bash
-# Skill-pack CLI entry. Prefers the bundled static binary (dist/ocr), same
-# idea as blockchain-skill's dist/agent-wallet.mjs: agents do not install deps.
+# Skill-pack CLI entry. ONLY the bundled binary (dist/ocr).
+# Never pip, never uv, never venv: agents must not spread packages around.
 #
 # Layout:
 #   <root>/ocr              thin wrapper -> bin/ocr
 #   <root>/bin/ocr          this file
-#   <root>/dist/ocr         self-contained binary (musl Linux x86_64 for noob)
-#   <root>/src/...          source (dev only)
+#   <root>/dist/ocr         self-contained binary (required)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BUNDLE="$ROOT/dist/ocr"
-VENV_OCR="$ROOT/.venv/bin/ocr"
 
-die() {
-  echo "ocr: $*" >&2
+if [[ ! -x "$BUNDLE" ]]; then
+  echo "ocr: missing bundled CLI at $BUNDLE (broken skill pack; rebuild with scripts/build-bundle.sh)" >&2
   exit 127
-}
-
-# 1) Bundled binary (agent skill packs). Probe --version so a glibc host that
-# cannot exec the musl ELF falls through cleanly.
-if [[ -x "$BUNDLE" ]]; then
-  if "$BUNDLE" --version >/dev/null 2>&1; then
-    exec "$BUNDLE" "$@"
-  fi
 fi
 
-# 2) Existing working venv (dev checkout after uv sync)
-if [[ -x "$VENV_OCR" ]] && "$VENV_OCR" --version >/dev/null 2>&1; then
-  exec "$VENV_OCR" "$@"
+# Probe so a wrong-arch ELF fails with a clear message instead of a cryptic loader error.
+if ! "$BUNDLE" --version >/dev/null 2>&1; then
+  echo "ocr: cannot run $BUNDLE on this host (need Linux x86_64 musl, e.g. noob Alpine). Do not pip/uv install." >&2
+  exit 127
 fi
 
-# 3) Dev bootstrap via uv (never for agents: they should get dist/ocr in the pack)
-find_uv() {
-  if command -v uv >/dev/null 2>&1; then
-    command -v uv
-    return 0
-  fi
-  local c
-  for c in "$HOME/.local/bin/uv" /usr/local/bin/uv; do
-    [[ -x "$c" ]] && { echo "$c"; return 0; }
-  done
-  return 1
-}
-
-uv_bin=""
-if uv_bin="$(find_uv)"; then
-  [[ -f "$ROOT/pyproject.toml" ]] || die "pyproject.toml missing under $ROOT"
-  if [[ -f "$ROOT/uv.lock" ]]; then
-    (cd "$ROOT" && "$uv_bin" sync --no-dev --frozen --project "$ROOT") \
-      || (cd "$ROOT" && "$uv_bin" sync --no-dev --project "$ROOT") \
-      || die "uv sync failed"
-  else
-    (cd "$ROOT" && "$uv_bin" sync --no-dev --project "$ROOT") || die "uv sync failed"
-  fi
-  [[ -x "$VENV_OCR" ]] || die "sync finished but $VENV_OCR missing"
-  exec "$VENV_OCR" "$@"
-fi
-
-die "no runnable CLI. Skill packs must ship dist/ocr. Dev: run scripts/build-bundle.sh or uv sync."
+exec "$BUNDLE" "$@"

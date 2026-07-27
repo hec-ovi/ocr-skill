@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.1
+
+- Launcher is binary-only: no uv/pip/venv fallback (agents must not install packages).
+- SKILL.md hard-bans pip/uv/apt; allowed-tools no longer list uv/uvx.
+
 ## 0.4.0
 
 - **Bundled CLI:** ship `dist/ocr` (PyInstaller onefile, Linux x86_64 musl) so agent

@@ -1,6 +1,6 @@
 {
   "name": "ocr-codex",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Local image and PDF OCR to Markdown for Codex agents via the ocr CLI (DeepSeek-OCR-2). Stdio only, no MCP.",
   "author": {
     "name": "Hector Oviedo",

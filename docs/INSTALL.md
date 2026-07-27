@@ -115,15 +115,13 @@ local path:
 /skills add /path/to/ocr-skill
 ```
 
-The pack includes `./ocr` (launcher). First agent call:
+The pack includes `./ocr` → `dist/ocr` (bundled binary). Agent call:
 
 ```bash
-.noob/skills/ocr/ocr init --quick --json
 .noob/skills/ocr/ocr extract /abs/path/to/file.pdf --json
 ```
 
-That launcher creates `.noob/skills/ocr/.venv` via `uv` (network once). Do not run `pip`
-or set `PYTHONPATH` by hand.
+No pip, no uv, no venv. If the binary is missing, reinstall the skill pack.
 
 ## Claude Code
 

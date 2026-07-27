@@ -2,15 +2,9 @@
 
 Load when `init`/`doctor` is not ready or the user asks how to install.
 
-## Agent skill pack (no hand install)
+## Agent skill pack (bundled binary only)
 
-After `/skills add` or `npx skills add`, the pack includes `./ocr` (and `bin/ocr`). First run:
-
-1. Finds `uv` (or installs a skill-local copy under `.tools/` if curl works)
-2. `uv sync --no-dev` into the pack's `.venv`
-3. Runs `.venv/bin/ocr`
-
-Agents should only call that launcher. Do not `pip install` into the system Python.
+After `/skills add` or `npx skills add`, the pack includes `./ocr` → `dist/ocr` (self-contained binary). Agents only run that path. **Never** `pip`, `uv`, or create a venv for OCR.
 
 ## Variables
 

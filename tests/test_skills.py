@@ -48,7 +48,7 @@ def test_skill_frontmatter_agentskills_spec() -> None:
         assert len(str(meta["compatibility"])) <= 500
 
     assert meta.get("user-invocable") is True
-    assert meta.get("metadata", {}).get("version") == "0.4.0"
+    assert meta.get("metadata", {}).get("version") == "0.4.1"
 
 
 def test_skill_body_has_standing_procedure() -> None:
@@ -69,9 +69,9 @@ def test_skill_body_has_standing_procedure() -> None:
     assert "Never invent" in body or "never invent" in body.lower()
     assert "not mcp" in body.lower() or "no mcp" in body.lower()
     assert ".noob/skills/ocr/ocr" in body
-    # direct verb, no mandatory init dance
-    assert "No separate init" in body or "no mandatory" in body.lower() or "No separate init step" in body
+    assert "No init" in body or "no init" in body.lower()
     assert "tesseract" in body.lower()
+    assert "bundled" in body.lower() or "dist/ocr" in body
 
 
 def test_skill_under_size_budget() -> None:
@@ -169,13 +169,13 @@ def test_install_docs_and_plugin_manifests() -> None:
     plugin_entry = market_data["plugins"][0]
     assert plugin_entry["name"] == "ocr"
     assert plugin_entry["source"] == "./plugins/ocr"
-    assert plugin_entry["version"] == "0.4.0"
+    assert plugin_entry["version"] == "0.4.1"
 
     plugin = ROOT / "plugins" / "ocr" / ".claude-plugin" / "plugin.json"
     assert plugin.is_file()
     plugin_data = json.loads(plugin.read_text(encoding="utf-8"))
     assert plugin_data["name"] == "ocr"
-    assert plugin_data["version"] == "0.4.0"
+    assert plugin_data["version"] == "0.4.1"
 
     agents = ROOT / ".agents" / "plugins" / "marketplace.json"
     assert agents.is_file()
